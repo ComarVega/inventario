@@ -159,6 +159,7 @@ export default function MovementsClient({
           name: locale === "fr" ? "Nom" : "Name",
           barcode: locale === "fr" ? "Code-barres" : "Barcode",
           unit: locale === "fr" ? "Unité" : "Unit",
+          warehouse: locale === "fr" ? "Entrepôt" : "Warehouse",
           cancel: locale === "fr" ? "Annuler" : "Cancel",
           create: locale === "fr" ? "Créer" : "Create",
           save: locale === "fr" ? "Enregistrer" : "Save",
