@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Package, Boxes, ArrowLeftRight, Users, Settings } from "lucide-react"
+import { Package, Boxes, ArrowLeftRight, Users, Settings, Building2 } from "lucide-react"
 
 type Props = {
     locale: string
@@ -50,6 +50,13 @@ export function Sidebar({ locale, userRole }: Props) {
                         >
                             <Users className="h-4 w-4" />
                             Usuarios
+                        </Link>
+                        <Link
+                            href={`${base}/user-warehouses`}
+                            className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200"
+                        >
+                            <Building2 className="h-4 w-4" />
+                            Asignar Almacenes
                         </Link>
                         <Link
                             href={`${base}/admin/settings`}

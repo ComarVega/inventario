@@ -31,6 +31,7 @@ model Warehouse {
   movementsFrom StockMovement[]    @relation("FromWarehouse")
   movementsTo   StockMovement[]    @relation("ToWarehouse")
   company       Company            @relation(fields: [companyId], references: [id])
+  users         UserWarehouse[]
 }
 
 model Product {
@@ -107,6 +108,7 @@ model User {
   accounts     Account[]
   sessions     Session[]
   stockMovements StockMovement[]
+  warehouses   UserWarehouse[]
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -149,6 +151,18 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model UserWarehouse {
+  id          String    @id @default(cuid())
+  userId      String
+  warehouseId String
+  assignedAt  DateTime  @default(now())
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, warehouseId])
 }
 
 model SystemSettings {

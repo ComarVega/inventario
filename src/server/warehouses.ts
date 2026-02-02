@@ -1,16 +1,40 @@
 import { cookies } from "next/headers"
 import { prisma } from "./db"
+import { auth } from "@/auth"
 
 
 const COOKIE_KEY = "activeWarehouseId"
 
 export async function getWarehouses() {
-    // 1 empresa por ahora
-
-    return prisma.warehouse.findMany ({
-        orderBy: {name: "asc"},
-        select: {id: true, name: true, code: true},
+    const session = await auth()
+    
+    // Si no hay sesión, devolver vacío
+    if (!session?.user?.id) {
+        return []
+    }
+    
+    // ADMIN ve todos los warehouses
+    if (session.user.role === "ADMIN") {
+        return prisma.warehouse.findMany({
+            orderBy: { name: "asc" },
+            select: { id: true, name: true, code: true },
+        })
+    }
+    
+    // STAFF y VIEWER solo ven warehouses asignados
+    const userWarehouses = await prisma.userWarehouse.findMany({
+        where: { userId: session.user.id },
+        include: {
+            warehouse: {
+                select: { id: true, name: true, code: true }
+            }
+        },
+        orderBy: {
+            warehouse: { name: "asc" }
+        }
     })
+    
+    return userWarehouses.map(uw => uw.warehouse)
 }
 
 

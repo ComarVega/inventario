@@ -78,6 +78,73 @@ async function main() {
     })
   }
 
+  // Asignar warehouses a usuarios
+  const warehouseRecords = await seedDb.warehouse.findMany()
+  const adminUser = await seedDb.user.findUnique({ where: { email: "admin@example.com" } })
+  const staffUser = await seedDb.user.findUnique({ where: { email: "staff@example.com" } })
+  const viewerUser = await seedDb.user.findUnique({ where: { email: "viewer@example.com" } })
+  
+  // Admin tiene acceso a todos los warehouses
+  if (adminUser) {
+    for (const wh of warehouseRecords) {
+      await seedDb.userWarehouse.upsert({
+        where: {
+          userId_warehouseId: {
+            userId: adminUser.id,
+            warehouseId: wh.id,
+          },
+        },
+        update: {},
+        create: {
+          userId: adminUser.id,
+          warehouseId: wh.id,
+        },
+      })
+    }
+  }
+  
+  // Staff solo a MAIN y NORTH
+  if (staffUser) {
+    const staffWarehouses = warehouseRecords.filter(w => 
+      w.code === 'EDM-MAIN' || w.code === 'EDM-NORTH'
+    )
+    for (const wh of staffWarehouses) {
+      await seedDb.userWarehouse.upsert({
+        where: {
+          userId_warehouseId: {
+            userId: staffUser.id,
+            warehouseId: wh.id,
+          },
+        },
+        update: {},
+        create: {
+          userId: staffUser.id,
+          warehouseId: wh.id,
+        },
+      })
+    }
+  }
+  
+  // Viewer solo a MAIN (solo lectura)
+  if (viewerUser) {
+    const mainWarehouse = warehouseRecords.find(w => w.code === 'EDM-MAIN')
+    if (mainWarehouse) {
+      await seedDb.userWarehouse.upsert({
+        where: {
+          userId_warehouseId: {
+            userId: viewerUser.id,
+            warehouseId: mainWarehouse.id,
+          },
+        },
+        update: {},
+        create: {
+          userId: viewerUser.id,
+          warehouseId: mainWarehouse.id,
+        },
+      })
+    }
+  }
+
   // Configuración del sistema
   await seedDb.systemSettings.upsert({
     where: { id: "default" },
@@ -92,10 +159,10 @@ async function main() {
   console.log("✅ Seed listo:")
   console.log(`- Company: ${company.name}`)
   console.log(`- Warehouses: ${warehouses.map((w) => w.code).join(", ")}`)
-  console.log("- Usuarios:")
-  for (const u of users) {
-    console.log(`  • ${u.email} (${u.role}) / ${u.password}`)
-  }
+  console.log("- Usuarios y sus warehouses:")
+  console.log(`  • admin@example.com (ADMIN) - Todos los warehouses`)
+  console.log(`  • staff@example.com (STAFF) - EDM-MAIN, EDM-NORTH`)
+  console.log(`  • viewer@example.com (VIEWER) - EDM-MAIN (solo lectura)`)
 }
 
 main()
