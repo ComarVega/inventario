@@ -43,11 +43,11 @@ export default function UserWarehousesClient({
       selectedWarehouses.forEach(id => fd.append("warehouseIds", id))
 
       const res = await assignWarehouses(locale, fd)
-      if (!res.ok) {
-        alert(res.message)
-      } else {
+      if (res.ok) {
         alert(locale === "fr" ? "Assignations mises à jour" : "Assignments updated")
         setSelectedUserId(null)
+      } else {
+        alert(res.message || "Error")
       }
     } finally {
       setSubmitting(false)

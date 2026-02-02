@@ -3,7 +3,8 @@
 import { z } from "zod"
 import { prisma } from "@/server/db"
 import { revalidatePath } from "next/cache"
-import { AuthError, requireRole, requireAdmin, requireStaffOrAdmin } from "@/server/auth"
+import { AuthError, requireRole, requireAdmin } from "@/server/auth"
+import { requireStaffOrAdmin } from "@/server/rbac"
 
 const ProductSchema = z.object({
   id: z.string().optional(),
