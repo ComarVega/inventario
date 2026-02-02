@@ -3,7 +3,7 @@
 import { z } from "zod"
 import { prisma } from "@/server/db"
 import { revalidatePath } from "next/cache"
-import { AuthError, requireRole, requireAdmin } from "@/server/auth"
+import { AuthError, requireRole, requireAdmin, requireStaffOrAdmin } from "@/server/auth"
 
 const ProductSchema = z.object({
   id: z.string().optional(),
@@ -17,6 +17,7 @@ const ProductSchema = z.object({
     .or(z.literal(""))
     .transform((v) => (v?.trim() ? v.trim() : null)),
   unit: z.string().trim().min(1).max(16).default("ea"),
+  warehouseId: z.string().optional(),
 })
 
 function mapPrismaUniqueError(e: unknown): string | null {
@@ -44,7 +45,7 @@ export async function createProduct(
   formData: FormData
 ): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await requireStaffOrAdmin()
   } catch (e) {
     if (e instanceof AuthError) {
       return {
@@ -60,6 +61,7 @@ export async function createProduct(
     name: formData.get("name"),
     barcode: formData.get("barcode"),
     unit: formData.get("unit"),
+    warehouseId: formData.get("warehouseId"),
   })
 
   if (!parsed.success) {
@@ -81,14 +83,30 @@ export async function createProduct(
     
     const expiresAt = isDemo ? new Date(Date.now() + 60 * 60 * 1000) : null; // 1 hora
     
-    await prisma.product.create({ 
+    const product = await prisma.product.create({ 
       data: { 
-        ...parsed.data,
+        sku: parsed.data.sku,
+        name: parsed.data.name,
+        barcode: parsed.data.barcode,
+        unit: parsed.data.unit,
         isDemo,
         expiresAt 
       } 
     })
+    
+    // Si se especificó warehouse, crear stock inicial en 0
+    if (parsed.data.warehouseId) {
+      await prisma.inventoryBalance.create({
+        data: {
+          productId: product.id,
+          warehouseId: parsed.data.warehouseId,
+          quantity: 0,
+        },
+      })
+    }
+    
     revalidatePath(`/${locale}/dashboard/products`)
+    revalidatePath(`/${locale}/dashboard/inventory`)
     return { ok: true }
   } catch (e) {
     const msg = mapPrismaUniqueError(e) ?? "Failed to create product"

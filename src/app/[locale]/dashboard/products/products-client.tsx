@@ -7,14 +7,23 @@ import { ProductsTable, type ProductRow } from "@/components/products/products-t
 import { ProductModal, type ProductFormValues } from "@/components/products/product-modal"
 import { createProduct, updateProduct, deleteProduct } from "./actions"
 
+type Warehouse = {
+  id: string
+  name: string
+}
+
 export default function ProductsClient({
   locale,
   rows,
   userRole,
+  warehouses,
+  currentWarehouseId,
 }: {
   locale: string
   rows: ProductRow[]
   userRole: string
+  warehouses: Warehouse[]
+  currentWarehouseId?: string
 }) {
   const [open, setOpen] = React.useState(false)
   const [mode, setMode] = React.useState<"create" | "edit">("create")
@@ -36,6 +45,7 @@ export default function ProductsClient({
     name: locale === "fr" ? "Nom" : "Name",
     barcode: locale === "fr" ? "Code-barres" : "Barcode",
     unit: locale === "fr" ? "Unité" : "Unit",
+    warehouse: locale === "fr" ? "Entrepôt" : "Warehouse",
 
     cancel: locale === "fr" ? "Annuler" : "Cancel",
     create: locale === "fr" ? "Créer" : "Create",
@@ -65,6 +75,12 @@ export default function ProductsClient({
     fd.set("name", values.name)
     fd.set("barcode", values.barcode)
     fd.set("unit", values.unit)
+    if (values.warehouseId) {
+      fd.set("warehouseId", values.warehouseId)
+    }
+    if (values.warehouseId) {
+      fd.set("warehouseId", values.warehouseId)
+    }
 
     if (mode === "create") {
       const res = await createProduct(locale, fd)
@@ -112,6 +128,8 @@ export default function ProductsClient({
         mode={mode}
         onOpenChange={setOpen}
         onSubmit={handleSubmit}
+        warehouses={warehouses}
+        currentWarehouseId={currentWarehouseId}
         labels={{
           createTitle: labels.createTitle,
           editTitle: labels.editTitle,
@@ -119,6 +137,7 @@ export default function ProductsClient({
           name: labels.name,
           barcode: labels.barcode,
           unit: labels.unit,
+          warehouse: labels.warehouse,
           cancel: labels.cancel,
           create: labels.create,
           save: labels.save,

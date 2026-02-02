@@ -11,6 +11,7 @@ export type ProductFormValues = {
   name: string
   barcode: string
   unit: string
+  warehouseId?: string
 }
 
 export type ProductRow = {
@@ -28,10 +29,16 @@ type Labels = {
   name: string
   barcode: string
   unit: string
+  warehouse: string
   cancel: string
   create: string
   save: string
   errorGeneric: string
+}
+
+type Warehouse = {
+  id: string
+  name: string
 }
 
 export function ProductModal({
@@ -41,6 +48,8 @@ export function ProductModal({
   onOpenChange,
   onSubmit,
   labels,
+  warehouses,
+  currentWarehouseId,
 }: {
   open: boolean
   mode: "create" | "edit"
@@ -48,6 +57,8 @@ export function ProductModal({
   onOpenChange: (open: boolean) => void
   onSubmit: (values: ProductFormValues) => Promise<void>
   labels: Labels
+  warehouses?: Warehouse[]
+  currentWarehouseId?: string
 }) {
   const [submitting, setSubmitting] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
@@ -57,6 +68,7 @@ export function ProductModal({
     name: initial?.name ?? "",
     barcode: initial?.barcode ?? "",
     unit: initial?.unit ?? "ea",
+    warehouseId: initial?.warehouseId ?? currentWarehouseId,
   })
 
   // Si cambian initial/mode (abrimos edit sobre otro producto), refresca formulario
@@ -66,9 +78,10 @@ export function ProductModal({
       name: initial?.name ?? "",
       barcode: initial?.barcode ?? "",
       unit: initial?.unit ?? "ea",
+      warehouseId: initial?.warehouseId ?? currentWarehouseId,
     })
     setError(null)
-  }, [initial?.sku, initial?.name, initial?.barcode, initial?.unit, mode, open])
+  }, [initial?.sku, initial?.name, initial?.barcode, initial?.unit, initial?.warehouseId, currentWarehouseId, mode, open])
 
   function set<K extends keyof ProductFormValues>(key: K, v: string) {
     setValues((prev) => ({ ...prev, [key]: v }))
@@ -144,6 +157,25 @@ export function ProductModal({
               placeholder="ea"
             />
           </div>
+
+          {mode === "create" && warehouses && warehouses.length > 0 && (
+            <div className="grid gap-2">
+              <Label htmlFor="warehouse">{labels.warehouse}</Label>
+              <select
+                id="warehouse"
+                value={values.warehouseId ?? ""}
+                onChange={(e) => set("warehouseId", e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                required
+              >
+                {warehouses.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
