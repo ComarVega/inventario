@@ -1,0 +1,7 @@
+model SystemSettings {
+  id            String   @id @default(cuid())
+  systemName    String   @default("Inventory System")
+  theme         String   @default("light")
+  updatedAt     DateTime @updatedAt
+  createdAt     DateTime @default(now())
+}
