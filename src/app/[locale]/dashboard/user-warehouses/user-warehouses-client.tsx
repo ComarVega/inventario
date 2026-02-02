@@ -47,7 +47,7 @@ export default function UserWarehousesClient({
         alert(locale === "fr" ? "Assignations mises à jour" : "Assignments updated")
         setSelectedUserId(null)
       } else {
-        alert(res.message || "Error")
+        alert(("message" in res ? res.message : "Error") || "Error")
       }
     } finally {
       setSubmitting(false)
