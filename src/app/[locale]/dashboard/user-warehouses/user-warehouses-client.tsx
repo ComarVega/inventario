@@ -46,7 +46,8 @@ export default function UserWarehousesClient({
       if (res.ok) {
         alert(locale === "fr" ? "Assignations mises à jour" : "Assignments updated")
         setSelectedUserId(null)
-      } else {        // @ts-expect-error - message existe cuando ok es false        alert(res.message)
+      } else {
+        alert(res.message || "Error")
       }
     } finally {
       setSubmitting(false)

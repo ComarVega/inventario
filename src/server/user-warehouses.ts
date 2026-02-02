@@ -17,8 +17,8 @@ export async function getUsersWithWarehouses(): Promise<UserWithWarehouses[]> {
         { expiresAt: { gt: new Date() } }
       ]
     },
-    // @ts-expect-error - UserWarehouse relación existe en runtime
     include: {
+      // @ts-expect-error - UserWarehouse relación existe en runtime
       warehouses: {
         select: {
           warehouseId: true
@@ -28,7 +28,6 @@ export async function getUsersWithWarehouses(): Promise<UserWithWarehouses[]> {
     orderBy: { email: "asc" }
   })
   
-  // @ts-expect-error - warehouses existe en runtime
   return users.map(u => ({
     id: u.id,
     name: u.name,
