@@ -10,7 +10,10 @@ export type InventoryRow = {
   updatedAt: Date | null
 }
 
-export async function listInventoryByWarehouse(warehouseId: string): Promise<InventoryRow[]> {
+export async function listInventoryByWarehouse(
+  warehouseId: string, 
+  userRole?: string
+): Promise<InventoryRow[]> {
   // Obtener info del warehouse para saber si es MAIN
   const warehouse = await prisma.warehouse.findUnique({
     where: { id: warehouseId },
@@ -18,6 +21,11 @@ export async function listInventoryByWarehouse(warehouseId: string): Promise<Inv
   })
   
   const isMainWarehouse = warehouse?.code === 'EDM-MAIN'
+  const isAdmin = userRole === 'ADMIN'
+  
+  // Solo ADMIN puede ver todos los productos en MAIN
+  // STAFF y VIEWER siempre ven solo productos con stock
+  const showAllProducts = isMainWarehouse && isAdmin
   
   const [products, balances] = await Promise.all([
     prisma.product.findMany({
@@ -40,10 +48,9 @@ export async function listInventoryByWarehouse(warehouseId: string): Promise<Inv
   const byProductId = new Map<string, { quantity: number; updatedAt: Date }>()
   for (const b of balances) byProductId.set(b.productId, { quantity: b.quantity, updatedAt: b.updatedAt })
 
-  // Si es MAIN, mostrar todos los productos
-  // Si no, mostrar solo productos que tienen stock en este warehouse
+  // Filtrar productos según el rol y el warehouse
   return products
-    .filter(p => isMainWarehouse || byProductId.has(p.id))
+    .filter(p => showAllProducts || byProductId.has(p.id))
     .map((p) => {
       const b = byProductId.get(p.id)
       return {

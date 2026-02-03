@@ -1,6 +1,7 @@
 import { getActiveWarehouseId, getWarehouses } from "@/server/warehouses"
 import { listInventoryByWarehouse } from "@/server/inventory"
 import { InventoryTable, type InventoryRow as UiRow } from "@/components/inventory/inventory-table"
+import { auth } from "@/auth"
 
 export default async function InventoryPage({
   params,
@@ -8,6 +9,7 @@ export default async function InventoryPage({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
+  const session = await auth()
   const warehouses = await getWarehouses()
   const activeWarehouseId = await getActiveWarehouseId()
 
@@ -27,7 +29,7 @@ export default async function InventoryPage({
     )
   }
 
-  const rows = await listInventoryByWarehouse(activeWarehouseId)
+  const rows = await listInventoryByWarehouse(activeWarehouseId, session?.user?.role)
 
   const uiRows: UiRow[] = rows.map((r) => ({
     ...r,

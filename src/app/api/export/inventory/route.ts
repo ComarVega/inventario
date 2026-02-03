@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server"
 import { listInventoryByWarehouse } from "@/server/inventory"
+import { auth } from "@/auth"
 
 export async function GET(req: Request) {
+  const session = await auth()
   const url = new URL(req.url)
   const warehouseId = url.searchParams.get("warehouseId")
   if (!warehouseId) {
     return NextResponse.json({ error: "warehouseId is required" }, { status: 400 })
   }
 
-  const rows = await listInventoryByWarehouse(warehouseId)
+  const rows = await listInventoryByWarehouse(warehouseId, session?.user?.role)
 
   const header = ["sku", "name", "barcode", "unit", "quantity", "updatedAt"]
   const lines = [header.join(",")]
