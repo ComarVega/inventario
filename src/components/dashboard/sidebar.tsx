@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Package, Boxes, ArrowLeftRight, Users, Settings, Building2 } from "lucide-react"
+import { Package, Boxes, ArrowLeftRight, Users, Settings, Building2, LayoutDashboard } from "lucide-react"
 
 type Props = {
     locale: string
@@ -15,6 +15,14 @@ export function Sidebar({ locale, userRole }: Props) {
             <div className="p-4 font-semibold text-slate-900 dark:text-slate-100">Inventory</div>
 
             <nav className="px-2 space-y-1">
+                <Link
+                    href={`${base}`}
+                    className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200"
+                    >
+                    <LayoutDashboard className="h-4 w-4" />
+                    Dashboard
+                </Link>
+
                 <Link
                     href={`${base}/inventory`}
                     className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200"

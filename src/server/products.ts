@@ -1,13 +1,62 @@
 import { prisma } from "@/server/db"
 
-export async function listProducts(userId?: string, userRole?: string) {
+export async function listProducts(userId?: string, userRole?: string, activeWarehouseId?: string) {
     // Si no hay sesión, devolver vacío
     if (!userId) {
         return []
     }
     
-    // ADMIN ve todos los productos
+    // ADMIN puede filtrar por warehouse si hay uno seleccionado
     if (userRole === "ADMIN") {
+        // Si hay warehouse seleccionado, filtrar solo productos de ese warehouse
+        if (activeWarehouseId) {
+            const products = await prisma.product.findMany({
+                where: {
+                    OR: [
+                        { isDemo: false },
+                        { isDemo: true, expiresAt: { gt: new Date() } }
+                    ],
+                    balances: {
+                        some: {
+                            warehouseId: activeWarehouseId
+                        }
+                    }
+                },
+                orderBy: { createdAt: "desc" },
+                select: {
+                    id: true,
+                    sku: true,
+                    name: true,
+                    barcode: true,
+                    unit: true,
+                    isDemo: true,
+                    expiresAt: true,
+                    updatedAt: true,
+                    createdAt: true,
+                    balances: {
+                        where: {
+                            warehouseId: activeWarehouseId
+                        },
+                        select: {
+                            warehouseId: true,
+                            warehouse: {
+                                select: { name: true, code: true }
+                            }
+                        },
+                        take: 1
+                    }
+                },
+            })
+            
+            return products.map(p => ({
+                ...p,
+                warehouseName: p.balances[0]?.warehouse.name ?? "-",
+                warehouseId: p.balances[0]?.warehouseId,
+                balances: undefined
+            }))
+        }
+        
+        // Sin warehouse seleccionado, mostrar todos los productos
         const products = await prisma.product.findMany({
             where: {
                 OR: [
