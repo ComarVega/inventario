@@ -10,7 +10,7 @@ export default async function ProductsPage({
 }) {
   const { locale } = await params
   const user = await requireUser()
-  const rows = await listProducts()
+  const rows = await listProducts(user.id, user.role)
   const warehouses = await getWarehouses()
   const activeWarehouseId = await getActiveWarehouseId()
 
