@@ -78,9 +78,6 @@ export default function ProductsClient({
     if (values.warehouseId) {
       fd.set("warehouseId", values.warehouseId)
     }
-    if (values.warehouseId) {
-      fd.set("warehouseId", values.warehouseId)
-    }
 
     if (mode === "create") {
       const res = await createProduct(locale, fd)
@@ -150,6 +147,7 @@ export default function ProductsClient({
                 name: editing.name,
                 barcode: editing.barcode ?? "",
                 unit: editing.unit,
+                warehouseId: editing.warehouseId,
               }
             : { unit: "ea" }
         }

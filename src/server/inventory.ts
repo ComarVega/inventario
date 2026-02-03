@@ -8,6 +8,7 @@ export type InventoryRow = {
   unit: string
   quantity: number
   updatedAt: Date | null
+  warehouseName?: string
 }
 
 export async function listInventoryByWarehouse(
@@ -17,7 +18,7 @@ export async function listInventoryByWarehouse(
   // Obtener info del warehouse para saber si es MAIN
   const warehouse = await prisma.warehouse.findUnique({
     where: { id: warehouseId },
-    select: { code: true }
+    select: { code: true, name: true }
   })
   
   const isMainWarehouse = warehouse?.code === 'EDM-MAIN'
@@ -61,6 +62,7 @@ export async function listInventoryByWarehouse(
         unit: p.unit,
         quantity: b?.quantity ?? 0,
         updatedAt: b?.updatedAt ?? null,
+        warehouseName: warehouse?.name ?? "-",
       }
     })
 }

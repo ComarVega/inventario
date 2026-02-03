@@ -137,6 +137,7 @@ export async function updateProduct(
     name: formData.get("name"),
     barcode: formData.get("barcode"),
     unit: formData.get("unit"),
+    warehouseId: formData.get("warehouseId"),
   })
 
   if (!parsed.success) {
@@ -151,9 +152,36 @@ export async function updateProduct(
   try {
     await prisma.product.update({
       where: { id },
-      data: parsed.data,
+      data: {
+        sku: parsed.data.sku,
+        name: parsed.data.name,
+        barcode: parsed.data.barcode,
+        unit: parsed.data.unit,
+      },
     })
+    
+    // Si se especificó un nuevo warehouse, actualizar o crear el balance
+    if (parsed.data.warehouseId) {
+      await prisma.inventoryBalance.upsert({
+        where: {
+          warehouseId_productId: {
+            warehouseId: parsed.data.warehouseId,
+            productId: id
+          }
+        },
+        create: {
+          productId: id,
+          warehouseId: parsed.data.warehouseId,
+          quantity: 0,
+        },
+        update: {
+          // No actualizar nada, solo asegurar que existe
+        }
+      })
+    }
+    
     revalidatePath(`/${locale}/dashboard/products`)
+    revalidatePath(`/${locale}/dashboard/inventory`)
     return { ok: true }
   } catch (e) {
     const msg = mapPrismaUniqueError(e) ?? "Failed to update product"

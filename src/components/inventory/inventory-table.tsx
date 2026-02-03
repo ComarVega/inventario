@@ -12,6 +12,7 @@ export type InventoryRow = {
   unit: string
   quantity: number
   updatedAt: string | null
+  warehouseName?: string
 }
 
 export function InventoryTable({ rows }: { rows: InventoryRow[] }) {
@@ -46,6 +47,7 @@ export function InventoryTable({ rows }: { rows: InventoryRow[] }) {
           <TableHeader>
             <TableRow>
               <TableHead>SKU</TableHead>
+              <TableHead>Warehouse</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Barcode</TableHead>
               <TableHead>Unit</TableHead>
@@ -56,7 +58,7 @@ export function InventoryTable({ rows }: { rows: InventoryRow[] }) {
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-10 text-center text-slate-500 dark:text-slate-400">
+                <TableCell colSpan={7} className="py-10 text-center text-slate-500 dark:text-slate-400">
                   No results.
                 </TableCell>
               </TableRow>
@@ -65,6 +67,7 @@ export function InventoryTable({ rows }: { rows: InventoryRow[] }) {
             {filtered.map((r) => (
               <TableRow key={r.productId}>
                 <TableCell className="font-medium dark:text-slate-100">{r.sku}</TableCell>
+                <TableCell className="dark:text-slate-300">{r.warehouseName ?? "-"}</TableCell>
                 <TableCell className="dark:text-slate-200">{r.name}</TableCell>
                 <TableCell className="dark:text-slate-300">{r.barcode ?? "-"}</TableCell>
                 <TableCell className="dark:text-slate-300">{r.unit}</TableCell>

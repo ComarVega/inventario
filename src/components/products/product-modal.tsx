@@ -158,7 +158,7 @@ export function ProductModal({
             />
           </div>
 
-          {mode === "create" && warehouses && warehouses.length > 0 && (
+          {warehouses && warehouses.length > 0 && (
             <div className="grid gap-2">
               <Label htmlFor="warehouse">{labels.warehouse}</Label>
               <select

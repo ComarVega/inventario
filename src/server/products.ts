@@ -8,7 +8,7 @@ export async function listProducts(userId?: string, userRole?: string) {
     
     // ADMIN ve todos los productos
     if (userRole === "ADMIN") {
-        return prisma.product.findMany({
+        const products = await prisma.product.findMany({
             where: {
                 OR: [
                     { isDemo: false },
@@ -26,8 +26,24 @@ export async function listProducts(userId?: string, userRole?: string) {
                 expiresAt: true,
                 updatedAt: true,
                 createdAt: true,
+                balances: {
+                    select: {
+                        warehouseId: true,
+                        warehouse: {
+                            select: { name: true, code: true }
+                        }
+                    },
+                    take: 1
+                }
             },
         })
+        
+        return products.map(p => ({
+            ...p,
+            warehouseName: p.balances[0]?.warehouse.name ?? "-",
+            warehouseId: p.balances[0]?.warehouseId,
+            balances: undefined
+        }))
     }
     
     // STAFF y VIEWER solo ven productos que tienen stock en sus warehouses asignados
@@ -53,7 +69,7 @@ export async function listProducts(userId?: string, userRole?: string) {
     
     const productIdSet = new Set(productIds.map(p => p.productId))
     
-    return prisma.product.findMany({
+    const products = await prisma.product.findMany({
         where: {
             id: { in: Array.from(productIdSet) },
             OR: [
@@ -72,8 +88,27 @@ export async function listProducts(userId?: string, userRole?: string) {
             expiresAt: true,
             updatedAt: true,
             createdAt: true,
+            balances: {
+                where: {
+                    warehouseId: { in: warehouseIds }
+                },
+                select: {
+                    warehouseId: true,
+                    warehouse: {
+                        select: { name: true, code: true }
+                    }
+                },
+                take: 1
+            }
         },
     })
+    
+    return products.map(p => ({
+        ...p,
+        warehouseName: p.balances[0]?.warehouse.name ?? "-",
+        warehouseId: p.balances[0]?.warehouseId,
+        balances: undefined
+    }))
 }
 
 
