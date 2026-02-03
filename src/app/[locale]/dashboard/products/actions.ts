@@ -164,9 +164,9 @@ export async function updateProduct(
     if (parsed.data.warehouseId) {
       await prisma.inventoryBalance.upsert({
         where: {
-          warehouseId_productId: {
-            warehouseId: parsed.data.warehouseId,
-            productId: id
+          productId_warehouseId: {
+            productId: id,
+            warehouseId: parsed.data.warehouseId
           }
         },
         create: {
